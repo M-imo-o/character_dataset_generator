@@ -1,67 +1,90 @@
-import re
-from config import SYSTEM_PROMPT
+"""
+=========================================================
+formatter.py
+
+Converts extracted conversations into ChatML format
+compatible with Unsloth, HuggingFace Datasets and TRL.
+
+Author : Adhithya K
+Project : Universal Character Dataset Generator
+=========================================================
+"""
+
+import config
+
+from utils import (
+    count_words,
+)
+
+from detector import detect_columns
 
 
-def clean_text(text):
-    """
-    Remove stage directions and normalize whitespace.
-    """
+# ==========================================================
+# Build System Prompt
+# ==========================================================
 
-    if not isinstance(text, str):
-        return ""
+def build_system_prompt():
 
-    # Remove (...)
-    text = re.sub(r"\(.*?\)", "", text)
+    return (
+        f"You are {config.TARGET_CHARACTER}. "
+        f"Always remain in character. "
+        f"Respond naturally as {config.TARGET_CHARACTER} would. "
+        f"Never mention that you are an AI."
+    )
 
-    # Remove [...]
-    text = re.sub(r"\[.*?\]", "", text)
 
-    # Remove extra whitespace
-    text = " ".join(text.split())
-
-    return text.strip()
-
+# ==========================================================
+# Format Dataset
+# ==========================================================
 
 def format_dataset(conversations):
 
-    formatted = []
+    dataset = []
 
-    seen = set()
+    system_prompt = build_system_prompt()
 
-    for conv in conversations:
+    for conversation in conversations:
 
-        history = "\n".join(conv["history"])
+        history = "\n".join(
+            conversation["history"]
+        )
 
-        reply = clean_text(conv["reply"])
+        reply = conversation["reply"]
 
-        # Skip tiny replies
-        if len(reply.split()) < 3:
+        # --------------------------------------------
+        # Remove very short replies
+        # --------------------------------------------
+
+        if (
+            config.REMOVE_SHORT_REPLIES
+            and count_words(reply)
+            < config.MIN_REPLY_WORDS
+        ):
+
             continue
 
-        item = {
+        sample = {
+
             "messages": [
+
                 {
                     "role": "system",
-                    "content": SYSTEM_PROMPT
+                    "content": system_prompt
                 },
+
                 {
                     "role": "user",
                     "content": history
                 },
+
                 {
                     "role": "assistant",
                     "content": reply
                 }
+
             ]
         }
 
-        key = (
-            history,
-            reply
-        )
+        dataset.append(sample)
 
-        if key not in seen:
-            formatted.append(item)
-            seen.add(key)
-
-    return formatted
+    return dataset

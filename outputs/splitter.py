@@ -1,69 +1,163 @@
-import random
+"""
+=========================================================
+splitter.py
+
+Splits the formatted dataset into train, validation
+and test sets and saves them as JSONL.
+
+Author : Adhithya K
+Project : Universal Character Dataset Generator
+=========================================================
+"""
+
+import os
 import json
-from pathlib import Path
+import random
 
-from config import (
-    TRAIN_SPLIT,
-    VALIDATION_SPLIT,
-    OUTPUT_FOLDER
-)
+import config
 
+
+# ==========================================================
+# Create Output Folder
+# ==========================================================
+
+def create_output_folder():
+
+    os.makedirs(
+        config.OUTPUT_FOLDER,
+        exist_ok=True
+    )
+
+
+# ==========================================================
+# Save JSONL
+# ==========================================================
 
 def save_jsonl(dataset, filename):
 
-    output = Path(OUTPUT_FOLDER)
-
-    output.mkdir(exist_ok=True)
+    path = os.path.join(
+        config.OUTPUT_FOLDER,
+        filename
+    )
 
     with open(
-        output / filename,
+        path,
         "w",
         encoding="utf-8"
-    ) as f:
+    ) as file:
 
         for sample in dataset:
 
-            f.write(
+            file.write(
                 json.dumps(
                     sample,
                     ensure_ascii=False
-                ) + "\n"
+                )
             )
 
+            file.write("\n")
+
+
+# ==========================================================
+# Split Dataset
+# ==========================================================
 
 def split_dataset(dataset):
+
+    create_output_folder()
 
     random.shuffle(dataset)
 
     total = len(dataset)
 
-    train_end = int(total * TRAIN_SPLIT)
+    train_end = int(
+        total * config.TRAIN_SPLIT
+    )
 
-    val_end = train_end + int(
-        total * VALIDATION_SPLIT
+    validation_end = train_end + int(
+        total * config.VALIDATION_SPLIT
     )
 
     train = dataset[:train_end]
 
     validation = dataset[
-        train_end:val_end
+        train_end:validation_end
     ]
 
-    test = dataset[val_end:]
+    test = dataset[
+        validation_end:
+    ]
+
+    return train, validation, test
+
+
+# ==========================================================
+# Save Dataset
+# ==========================================================
+
+def save_dataset(dataset):
+
+    train, validation, test = split_dataset(dataset)
+
+    character = (
+        config.TARGET_CHARACTER
+        .lower()
+        .replace(" ", "_")
+    )
+
+    train_name = (
+        f"{character}_train.jsonl"
+    )
+
+    validation_name = (
+        f"{character}_validation.jsonl"
+    )
+
+    test_name = (
+        f"{character}_test.jsonl"
+    )
 
     save_jsonl(
         train,
-        "hermione_train.jsonl"
+        train_name
     )
 
     save_jsonl(
         validation,
-        "hermione_validation.jsonl"
+        validation_name
     )
 
     save_jsonl(
         test,
-        "hermione_test.jsonl"
+        test_name
     )
 
-    return train, validation, test
+    print()
+
+    print("=" * 60)
+
+    print("Dataset Saved Successfully")
+
+    print("=" * 60)
+
+    print()
+
+    print(f"Training Samples   : {len(train)}")
+
+    print(f"Validation Samples : {len(validation)}")
+
+    print(f"Test Samples       : {len(test)}")
+
+    print()
+
+    print(
+        f"Output Folder : {config.OUTPUT_FOLDER}"
+    )
+
+    print()
+
+    print(train_name)
+
+    print(validation_name)
+
+    print(test_name)
