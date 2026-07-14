@@ -1,52 +1,276 @@
-# Hermione Dataset Generator
+# 🎭 CharacterForge
+### Universal Character Dataset Generator for LLM Fine-Tuning
 
-A Python utility for extracting, cleaning, formatting, and splitting dialogues from CSV source files to generate training datasets for LLM character fine-tuning.
+CharacterForge is an open-source preprocessing toolkit that converts structured dialogue datasets (movies, TV shows, anime, games, etc.) into high-quality conversational datasets for character-specific Large Language Model (LLM) fine-tuning.
 
-## Project Structure
+Instead of manually cleaning thousands of dialogue lines, CharacterForge automatically extracts conversations, reconstructs context, merges consecutive replies, removes noisy samples, and exports datasets in **ChatML JSONL format** compatible with **Unsloth**, **TRL**, and **Hugging Face Datasets**.
 
-```text
-HermioneDatasetGenerator/
-├── data/                  # Raw dialogue and characters CSV files
-├── output/                # Generated JSONL datasets (git ignored)
-├── outputs/               # Source code scripts
-│   ├── config.py          # Settings and path configuration
-│   ├── loader.py          # CSV loader
-│   ├── conv_build.py      # Conversation processing logic
-│   ├── format.py          # Data cleaner and system prompter
-│   ├── splitter.py        # Splitting datasets into train/val/test
-│   └── main.py            # Execution entry point
-├── .gitignore
-└── requirements.txt
+---
+
+## ✨ Features
+
+- 🎭 Generate datasets for **any character** from a dialogue dataset.
+- 📂 Automatic CSV detection.
+- 🔍 Automatic column detection (Speaker, Dialogue, Chapter, Place, etc.).
+- 💬 Conversation reconstruction using previous dialogue context.
+- 🔄 Merge consecutive replies from the target character.
+- 📚 Preserve chapter and location boundaries.
+- 🧹 Remove duplicates and stage directions.
+- ✂️ Filter very short or low-quality responses.
+- 📦 Export datasets in ChatML JSONL format.
+- 📊 Automatic train / validation / test split.
+- ⚙️ Highly configurable preprocessing pipeline.
+- 🚀 Ready for fine-tuning using **Unsloth**, **TRL**, and **Hugging Face**.
+
+---
+
+# 📂 Project Structure
+
+```
+CharacterForge/
+│
+├── data/                         # Input CSV files
+│
+├── output/                       # Generated datasets
+│
+├── config.py                     # Project configuration
+├── detector.py                   # Column detection
+├── loader.py                     # Dataset loader
+├── utils.py                      # Helper utilities
+├── conversation_builder.py       # Conversation reconstruction
+├── formatter.py                  # ChatML formatter
+├── splitter.py                   # Dataset splitter
+├── main.py                       # Main pipeline
+│
+├── requirements.txt
+└── README.md
 ```
 
-## Setup Instructions
+---
 
-1. **Clone the repository:**
-   ```bash
-   git clone <your-repository-url>
-   cd HermioneDatasetGenerator
-   ```
+# 🚀 How It Works
 
-2. **Create and activate a virtual environment (optional but recommended):**
-   ```bash
-   python -m venv venv
-   # On Windows (PowerShell):
-   .\venv\Scripts\Activate.ps1
-   # On macOS/Linux:
-   source venv/bin/activate
-   ```
+```
+Structured Dialogue Dataset
+            │
+            ▼
+Automatic CSV Detection
+            │
+            ▼
+Column Detection
+            │
+            ▼
+Conversation Extraction
+            │
+            ▼
+Cleaning Pipeline
+            │
+            ▼
+Conversation Formatting
+            │
+            ▼
+Dataset Splitting
+            │
+            ▼
+ChatML JSONL Dataset
+```
 
-3. **Install dependencies:**
-   ```bash
-   pip install -r requirements.txt
-   ```
+---
 
-## Usage
+# 📦 Installation
 
-1. Put your raw CSV files (`Dialogue.csv`, `Characters.csv`, `Chapters.csv`, `Places.csv`) inside the `data/` folder.
-2. Edit settings in `outputs/config.py` as needed (e.g. `TARGET_CHARACTER`).
-3. Run the generator script:
-   ```bash
-   python outputs/main.py
-   ```
-4. Output `.jsonl` files will be generated in the `output/` folder.
+Clone the repository
+
+```bash
+git clone https://github.com/yourusername/CharacterForge.git
+```
+
+Move into the project
+
+```bash
+cd CharacterForge
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+---
+
+# 📁 Input Dataset
+
+Place all dataset CSV files inside
+
+```
+data/
+```
+
+Example
+
+```
+data/
+
+Dialogue.csv
+
+Characters.csv
+
+Places.csv
+
+Chapters.csv
+
+Spells.csv
+```
+
+---
+
+# ▶️ Usage
+
+Run
+
+```bash
+python main.py
+```
+
+The program will ask for a target character (if not specified in `config.py`).
+
+Example
+
+```
+Enter target character:
+
+> Hermione Granger
+```
+
+---
+
+# 📤 Output
+
+Generated datasets are stored in
+
+```
+output/
+```
+
+Example
+
+```
+hermione_granger_train.jsonl
+
+hermione_granger_validation.jsonl
+
+hermione_granger_test.jsonl
+```
+
+---
+
+# 📄 Output Format
+
+Each sample is exported in ChatML format.
+
+```json
+{
+  "messages": [
+    {
+      "role": "system",
+      "content": "You are Hermione Granger. Always remain in character."
+    },
+    {
+      "role": "user",
+      "content": "Harry: Where are you?"
+    },
+    {
+      "role": "assistant",
+      "content": "I'm in the library."
+    }
+  ]
+}
+```
+
+---
+
+# ⚙️ Configuration
+
+The preprocessing pipeline can be configured in
+
+```
+config.py
+```
+
+Example
+
+```python
+TARGET_CHARACTER = "Hermione Granger"
+
+CONTEXT_WINDOW = 4
+
+KEEP_SAME_CHAPTER = True
+
+KEEP_SAME_PLACE = True
+
+REMOVE_DUPLICATES = True
+
+REMOVE_SHORT_REPLIES = True
+```
+
+---
+
+# 🧠 Supported Datasets
+
+CharacterForge is designed for any structured dialogue dataset, including:
+
+- 🎬 Movie Scripts
+- 📺 TV Shows
+- 🎮 Video Games
+- 📖 Visual Novels
+- 🎌 Anime
+- 📚 Books (dialogue datasets)
+- 🤖 Custom dialogue datasets
+
+---
+
+# 🛠 Tech Stack
+
+- Python
+- Pandas
+- JSON
+- Regular Expressions
+- ChatML
+- Hugging Face Datasets
+- Unsloth
+
+---
+
+# 🔮 Roadmap
+
+- [x] Automatic dialogue extraction
+- [x] ChatML formatting
+- [x] Train/Validation/Test splitting
+- [x] Automatic column detection
+- [ ] Intelligent CSV detection
+- [ ] Interactive character selection
+- [ ] Dataset quality report
+- [ ] Multi-format export (CSV, JSON, Parquet)
+- [ ] GUI Interface
+- [ ] Hugging Face Dataset upload support
+
+---
+
+# 🤝 Contributing
+
+Contributions, feature requests, and bug reports are welcome.
+
+If you'd like to improve CharacterForge, feel free to fork the repository and submit a pull request.
+
+---
+
+# 📜 License
+
+This project is licensed under the MIT License.
+
+---
+
+# ⭐ If you found this project useful
+
+Please consider giving the repository a ⭐ on GitHub!
