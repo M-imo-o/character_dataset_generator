@@ -103,12 +103,11 @@ def detect_character_table(datasets):
         columns = [c.lower() for c in df.columns]
 
         if (
-            "character name".lower() in columns
-            or "character".lower() in columns
+            "character name" in columns
+            or "character" in columns
         ):
-
-            if len(df.columns) < 6:
-
+            detected = detect_columns(df)
+            if detected["text"] is None:
                 return filename
 
     return None
